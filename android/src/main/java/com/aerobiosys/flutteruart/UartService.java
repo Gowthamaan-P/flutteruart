@@ -1,6 +1,6 @@
 package com.aerobiosys.flutteruart;
 
-import android.util.Log;
+//import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.security.InvalidParameterException;
 
 public class UartService extends android.app.Application {
 
-    private static final String TAG = "uart";
+    //private static final String TAG = "uart";
     private Uart mUart = null;
     protected OutputStream mOutputStream;
     private InputStream mInputStream;
@@ -37,7 +37,7 @@ public class UartService extends android.app.Application {
                     if (mInputStream == null) return;
                     size = mInputStream.read(buffer);
                     count ++;
-                    Log.e(TAG,"Size " + size + ", Count" + count + ", Buffer "+  buffer.toString());
+                    //Log.e(TAG,"Size " + size + ", Count" + count + ", Buffer "+  buffer.toString());
                     if (size > 0) {
                         onDataReceived(buffer, size);
                     }
@@ -60,15 +60,15 @@ public class UartService extends android.app.Application {
         return true;
     }
 
-    public int writeData(String writeText){
+    public boolean writeData(String writeText){
         /*Serial Port Write Implementation*/
         try {
             mOutputStream.write(writeText.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
-            return -1;
+            return false;
         }
-        return writeText.length();
+        return true;
     }
 
     private void onDataReceived(final byte[] buffer, final int size){
@@ -78,12 +78,12 @@ public class UartService extends android.app.Application {
         }
     }
 
-    public Uart openSerialPort(File device, ReaderCallback callback) throws SecurityException, IOException, InvalidParameterException {
+    public Uart openSerialPort(File device, ReaderCallback callback, int baudRate) throws SecurityException, IOException, InvalidParameterException {
         if (mUart == null) {
             /* Read serial port parameters */
 
             /* Open the serial port */
-            mUart = new Uart(device, Configs.baudRate);
+            mUart = new Uart(device, baudRate);
             mInputStream = mUart.getInputStream();
             mOutputStream = mUart.getOutputStream();
             mCallback = callback;
@@ -107,7 +107,7 @@ public class UartService extends android.app.Application {
         }
     }
 
-    public UartService(File device, ReaderCallback callback) throws SecurityException, IOException {
-        openSerialPort(device, callback);
+    public UartService(File device, ReaderCallback callback, int baudRate) throws SecurityException, IOException {
+        openSerialPort(device, callback, baudRate);
     }
 }

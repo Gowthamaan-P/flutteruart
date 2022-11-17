@@ -2,6 +2,8 @@ package com.aerobiosys.flutteruart;
 
 import androidx.annotation.NonNull;
 
+import android.util.Log;
+
 import android.os.Handler;
 import android.os.Looper;
 
@@ -17,32 +19,31 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.BinaryMessenger;
 
-import com.aerobiosys.flutteruart.*;
 
 /** FlutteruartPlugin */
 public class FlutteruartPlugin implements FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler {
 
-  private int m_InterfaceId;
-  private final UartService[] mSerialPort = {null, null};
+  private static final String TAG = "FlutterUart";
+  private String m_InterfaceId;
+  private int transmissionBaudRate;
+  private UartService mSerialPort;
   private EventChannel m_EventChannel;
   private EventChannel.EventSink m_EventSink;
   private BinaryMessenger m_Messenger;
   private Handler m_handler;
 
-  private void beginUart(Result result, int uartId) {
-    m_InterfaceId = uartId;
+  private void beginUart(Result result, String uartId, int baudRate) {
     try {
-      int i =0;
-      for(String devicePath : Configs.uartdevicePath) {
-        mSerialPort[i] = new UartService(new File(devicePath), mReaderCallback);
-        i++;
-      }
+      mSerialPort = new UartService(new File(uartId), mReaderCallback, baudRate);
       result.success(true);
     } catch (SecurityException e) {
+      Log.e(TAG,"Read/Write permission denied");
       result.error("E001", "Read/Write permission denied", null);
     } catch (IOException e) {
+      Log.e(TAG,"Port cannot be opened");
       result.error("E002", "Port cannot be opened", null);
     } catch (InvalidParameterException e) {
+      Log.e(TAG,"Serial port not configured");
       result.error("E003", "Serial port not configured", null);
     }
   }
@@ -64,12 +65,14 @@ public class FlutteruartPlugin implements FlutterPlugin, MethodCallHandler, Even
   };
 
   private boolean write(byte[]  writeString) {
-    return mSerialPort[m_InterfaceId].writeData(writeString);
+    return mSerialPort.writeData(writeString);
   }
+
+  private boolean write(String  writeString) { return mSerialPort.writeData(writeString); }
 
   private void closeUart()
   {
-    mSerialPort[m_InterfaceId].closeSerialPort();
+    mSerialPort.closeSerialPort();
   }
 
 
@@ -120,7 +123,9 @@ public class FlutteruartPlugin implements FlutterPlugin, MethodCallHandler, Even
     switch (call.method) {
 
       case "begin":
-        beginUart(result, call.argument("uartId"));
+        m_InterfaceId = call.argument("uartId");
+        transmissionBaudRate = call.argument("baudRate");
+        beginUart(result, m_InterfaceId, transmissionBaudRate );
         break;
 
       case "write":

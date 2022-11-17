@@ -91,6 +91,8 @@ JNIEXPORT jobject JNICALL Java_com_aerobiosys_flutteruart_Uart_open
 		{
 			LOGD("Configuring serial port Failed");
 			close(uart_fd);
+		}else{
+			LOGD("Configuring serial port Successful");
 		}
 
 	}

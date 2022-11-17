@@ -10,8 +10,13 @@ class FlutterUart{
   static const EventChannel _eventChannel = EventChannel('flutteruart/stream');
   static Stream<Uint8List>? _inputStream;
 
-  final int _baudRate = 57600;
-  int get baudRate => _baudRate;
+  static int? _baudRate;
+  static int get currentBaudRate => _baudRate??115200;
+  static set currentBaudRate(newBaudRate) => _baudRate = newBaudRate;
+
+  static int? _uartId;
+  static int get currentUartId => _uartId??1;
+  static set currentUartId(newUartId) => _uartId = newUartId;
 
   static Stream<Uint8List>? get inputStream {
     _inputStream ??= _eventChannel.receiveBroadcastStream().map<Uint8List>((dynamic value) => value);
@@ -21,8 +26,13 @@ class FlutterUart{
   /// Opens the uart communication channel.
   ///
   /// returns true if successful or false if failed.
-  static Future<bool> begin(int uartId) async {
-    return await _channel.invokeMethod("begin", {"uartId": uartId-1});
+  static Future<bool> begin({int? uartId, int? baudRate}) async {
+    baudRate ??= currentBaudRate;
+    currentBaudRate = baudRate;
+
+    uartId ??= currentUartId;
+    currentUartId = uartId;
+    return await _channel.invokeMethod("begin", {"uartId": "/dev/ttyMSM$uartId", "baudRate": baudRate });
   }
 
   /// Closes the uart port.
@@ -32,6 +42,10 @@ class FlutterUart{
 
   /// Asynchronously writes [data].
   static Future<void> write(Uint8List data) async {
+    return await _channel.invokeMethod("write", {"data": data});
+  }
+
+  static Future<void> writeString(String data) async {
     return await _channel.invokeMethod("write", {"data": data});
   }
 }

@@ -53,7 +53,7 @@ class MyAppState extends State<MyApp> {
   }
 
   void beginUartCommunication()async{
-    await FlutterUart.begin(1).then((value){
+    await FlutterUart.begin(uartId: 1, baudRate: 115200).then((value){
       if(value){
         initiateCommunicationPorts();
       }
