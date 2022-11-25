@@ -68,8 +68,6 @@ public class FlutteruartPlugin implements FlutterPlugin, MethodCallHandler, Even
     return mSerialPort.writeData(writeString);
   }
 
-  private boolean write(String  writeString) { return mSerialPort.writeData(writeString); }
-
   private void closeUart()
   {
     mSerialPort.closeSerialPort();

@@ -46,6 +46,6 @@ class FlutterUart{
   }
 
   static Future<void> writeString(String data) async {
-    return await _channel.invokeMethod("write", {"data": data});
+    return await _channel.invokeMethod("write", {"data": Uint8List.fromList(data.codeUnits)});
   }
 }
